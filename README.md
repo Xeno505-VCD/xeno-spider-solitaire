@@ -21,7 +21,7 @@ Built-in backpack system for snake skins, backgrounds, and food styles. Click th
 
 ## 🚀 Play Online
 
-[https://snake-game-xeno.netlify.app](https://snake-game-xeno.netlify.app)
+[https://xeno505-vcd.github.io/snake-game/](https://xeno505-vcd.github.io/snake-game/)
 
 ## 📝 Feedback
 
