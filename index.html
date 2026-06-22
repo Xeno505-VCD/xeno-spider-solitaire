@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#f0f0e8" />
+    <title>Snake Game</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- 顶部信息面板 -->
+      <div id="info-panel">
+        <div id="score-display">
+          <span class="label">🏆 Best</span>
+          <span id="high-score" class="value">0</span>
+        </div>
+        <div id="score-display-current">
+          <span class="label">📊 Score</span>
+          <span id="current-score" class="value">0</span>
+        </div>
+        <span id="version-tag">v1.0.0</span>
+      </div>
+
+      <!-- 游戏画布容器 -->
+      <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+
+        <!-- 🎮 左侧悬浮 HUD 面板 -->
+        <div id="game-hud">
+          <button id="btn-help" title="How to Play">❓</button>
+          <div class="hud-section">
+            <select id="sel-difficulty" title="Difficulty">
+              <option value="easy">Easy</option>
+              <option value="normal" selected>Normal</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+          <button id="btn-restart" title="Restart">🔄</button>
+          <button id="btn-wrap" title="Wall Wrap">🔁</button>
+          <button id="btn-pause" title="Pause/Resume">⏯</button>
+          <span class="hud-divider"></span>
+          <button id="btn-skin" title="Skin">🐍</button>
+          <button id="btn-bg" title="Background">🖼</button>
+          <button id="btn-food" title="Food Style">🍎</button>
+          <span class="hud-divider"></span>
+          <div id="stealth-indicator" class="hidden" title="Invincible">🛡️</div>
+          <button id="btn-feedback" title="Feedback">💬</button>
+        </div>
+
+        <!-- 📖 玩法帮助弹窗 -->
+        <div id="help-popup" class="hidden">
+          <div id="help-box">
+            <h3>📖 Button Guide</h3>
+            <table>
+              <tr><td>▼</td><td>Difficulty (Easy / Normal / Hard)</td></tr>
+              <tr><td>🔄</td><td>Restart Game</td></tr>
+              <tr><td>🔁</td><td>Wall Wrap (ON / OFF)</td></tr>
+              <tr><td>⏯</td><td>Pause / Resume</td></tr>
+              <tr><td>🐍</td><td>Snake Skin (tap to switch)</td></tr>
+              <tr><td>🖼</td><td>Background (tap to switch)</td></tr>
+              <tr><td>🍎</td><td>Food Style (tap to switch)</td></tr>
+              <tr><td>🛡️</td><td>Invincible (stealth active)</td></tr>
+              <tr><td>💬</td><td>Feedback message</td></tr>
+            </table>
+            <p class="help-hint">💡 Desktop: Arrow Keys / WASD<br>💡 Mobile: Swipe on canvas</p>
+            <button class="btn-primary" onclick="document.getElementById('help-popup').classList.add('hidden')">Got it</button>
+          </div>
+        </div>
+
+        <!-- 💬 意见反馈弹窗 -->
+        <div id="feedback-popup" class="hidden">
+          <div id="feedback-box">
+            <h3>💬 Feedback</h3>
+            <textarea id="feedback-textarea" rows="4" placeholder="Write your feedback here..."></textarea>
+            <div class="feedback-btns">
+              <button id="btn-feedback-submit" class="btn-primary">Submit</button>
+              <button id="btn-feedback-close">Close</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 🎬 开始界面覆盖层 -->
+        <div id="start-overlay">
+          <div id="start-box">
+            <h2>🐍 Snake Game</h2>
+            <p>Click button to start</p>
+            <button id="btn-start-game" class="btn-primary">🎮 START</button>
+            <p class="start-hint">⌨️ Desktop: ↑↓←→ / WASD<br>📱 Mobile: Swipe screen</p>
+          </div>
+        </div>
+
+        <!-- 💬 Toast 浮动提示 -->
+        <div id="toast" class="hidden"></div>
+
+        <!-- 游戏结束弹窗 -->
+        <div id="game-over-overlay" class="hidden">
+          <div id="game-over-box">
+            <h2>Game Over</h2>
+            <p id="final-score-text">Score: 0</p>
+            <p id="final-high-text">Best: 0</p>
+            <button id="btn-restart-overlay" class="btn-primary">🔄 Play Again</button>
+          </div>
+        </div>
+        <!-- 暂停弹窗 -->
+        <div id="pause-overlay" class="hidden">
+          <div id="pause-box">
+            <h2>Paused</h2>
+            <button id="btn-resume" class="btn-primary">▶ Resume</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
