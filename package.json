@@ -1,18 +1,24 @@
 {
-  "name": "snake-game",
-  "private": true,
+  "name": "xeno-spider-solitaire",
   "version": "1.0.0",
+  "description": "XENO·异星织网者 - 蜘蛛纸牌游戏",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc && vite build",
     "preview": "vite preview"
   },
+  "keywords": [
+    "spider-solitaire",
+    "xeno",
+    "canvas",
+    "game"
+  ],
+  "author": "XENO",
+  "license": "ISC",
   "devDependencies": {
-    "typescript": "~5.4.5",
-    "vite": "^5.4.21"
-  },
-  "dependencies": {
-    "ws": "^8.21.0"
+    "terser": "^5.48.0",
+    "typescript": "^5.4.0",
+    "vite": "^5.4.0"
   }
 }

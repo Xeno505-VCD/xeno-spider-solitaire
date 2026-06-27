@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>XENO·异星织网者 | 蜘蛛纸牌</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>🕷️</text></svg>" />
+  <script type="module" crossorigin src="/xeno-spider-solitaire/assets/index-ChN8xP5M.js"></script>
+  <link rel="modulepreload" crossorigin href="/xeno-spider-solitaire/assets/o-storage-A-0mNE8Q.js">
+  <link rel="modulepreload" crossorigin href="/xeno-spider-solitaire/assets/e-engine-CmwF7WqZ.js">
+  <link rel="modulepreload" crossorigin href="/xeno-spider-solitaire/assets/x-renderer-CXczhj_G.js">
+  <link rel="modulepreload" crossorigin href="/xeno-spider-solitaire/assets/n-input-CIaCH1aE.js">
+  <link rel="stylesheet" crossorigin href="/xeno-spider-solitaire/assets/index-DiprzKyF.css">
+</head>
+<body>
+  <div id="rotate-hint">
+    <div id="rotate-icon">📱</div>
+    <div id="rotate-text">请将设备横屏使用</div>
+    <div id="rotate-sub">旋转设备以获得最佳游戏体验</div>
+  </div>
+  <div id="app">
+    <canvas id="gameCanvas"></canvas>
+  </div>
+  <script>
+    // Mobile fullscreen immersive mode (hide browser chrome)
+    function requestFullscreen() {
+      const el = document.documentElement;
+      if (el.requestFullscreen) {
+        el.requestFullscreen().catch(function(){});
+      } else if (el.webkitRequestFullscreen) {
+        el.webkitRequestFullscreen();
+      }
+    }
+    document.addEventListener('click', requestFullscreen, { once: true });
+    document.addEventListener('touchstart', requestFullscreen, { once: true });
+  </script>
+</body>
+</html>
