@@ -2,6 +2,7 @@
 // Deal animation + mobile 40x58 + dynamic column compression
 
 import type { Card, GameState, DragState } from '../o_module/types';
+import type { SelectionState } from '../n_module/input';
 import { Suit, Rank, SUIT_SYMBOLS, SUIT_COLORS, RANK_NAMES, Atmosphere } from '../o_module/types';
 
 // --- Animation State ---
@@ -54,39 +55,29 @@ export interface LayoutConfig {
   slotSize: number; slotGap: number; partYOffset: number;
 }
 
-function getLayoutConfig(canvasW: number): LayoutConfig {
+function getLayoutConfig(canvasW: number, canvasH: number = 600): LayoutConfig {
   const isMobile = canvasW < 768;
-  const isTiny = canvasW < 480;
-  if (isTiny) {
-    // Extreme narrow: card size halved from original 24x36 -> 12x18
-    return {
-      cardW: 12, cardH: 18, cardRadius: 1, colGap: 1,
-      offsetY: 6, offsetYBack: 4,
-      hudTitleFont: 'bold 7px sans-serif', hudTitleY: 10,
-      hudInfoFont: 'bold 4px sans-serif', hudInfoLineH: 7, hudSubY: 1,
-      hintFont: 'bold 5px sans-serif', hintY: 20,
-      cardRankFont: 'bold 7px sans-serif',
-      cardSymbolFont: '4px sans-serif',
-      cardSymbolLarge: 'bold 12px sans-serif',
-      cardBackFont: 'bold 3px monospace',
-      bottomFont: '4px sans-serif',
-      slotSize: 10, slotGap: 1, partYOffset: 2,
-    };
-  }
   if (isMobile) {
-    // Mobile: card size halved from original 28x40 -> 14x20
+    // Mobile: Unit-based proportional sizing
+    const unitW = canvasW / 100;
+    const unitH = canvasH / 100;
+    const cardW = Math.round(unitW * 2.6);
+    const cardH = Math.round(cardW * 1.43);
+    const colGap = Math.round(unitW * 0.35);
+    const fontSize = Math.round(unitW * 1.1);
+    const largeSymSize = Math.round(cardW * 0.85);
     return {
-      cardW: 14, cardH: 20, cardRadius: 1, colGap: 2,
-      offsetY: 6, offsetYBack: 4,
-      hudTitleFont: 'bold 8px sans-serif', hudTitleY: 10,
-      hudInfoFont: 'bold 5px sans-serif', hudInfoLineH: 7, hudSubY: 1,
-      hintFont: 'bold 6px sans-serif', hintY: 22,
-      cardRankFont: 'bold 7px sans-serif',
-      cardSymbolFont: '4px sans-serif',
-      cardSymbolLarge: 'bold 12px sans-serif',
-      cardBackFont: 'bold 4px monospace',
-      bottomFont: '5px sans-serif',
-      slotSize: 12, slotGap: 2, partYOffset: 2,
+      cardW, cardH, cardRadius: Math.max(1, Math.round(cardW * 0.08)), colGap,
+      offsetY: Math.round(cardH * 0.28), offsetYBack: Math.round(cardH * 0.2),
+      hudTitleFont: `bold ${fontSize}px sans-serif`, hudTitleY: Math.round(unitH * 1.6),
+      hudInfoFont: `bold ${Math.round(fontSize * 0.7)}px sans-serif`, hudInfoLineH: Math.round(unitH * 1.2), hudSubY: Math.round(unitH * 0.2),
+      hintFont: `bold ${Math.round(fontSize * 0.85)}px sans-serif`, hintY: Math.round(unitH * 4.5),
+      cardRankFont: `bold ${fontSize}px sans-serif`,
+      cardSymbolFont: `${Math.round(fontSize * 0.6)}px sans-serif`,
+      cardSymbolLarge: `bold ${largeSymSize}px sans-serif`,
+      cardBackFont: `bold ${Math.round(fontSize * 0.55)}px monospace`,
+      bottomFont: `${Math.round(fontSize * 0.7)}px sans-serif`,
+      slotSize: Math.round(cardW * 0.85), slotGap: Math.round(unitW * 0.15), partYOffset: Math.round(unitH * 0.3),
     };
   }
   return {
@@ -197,7 +188,7 @@ export interface LayoutData {
 }
 
 export function calculateLayout(canvasW: number, canvasH: number): LayoutData {
-  const cfg = getLayoutConfig(canvasW);
+  const cfg = getLayoutConfig(canvasW, canvasH);
   const isMobile = canvasW < 768;
   const isTiny = canvasW < 480;
   const colCount = 10;
@@ -219,9 +210,9 @@ export function calculateLayout(canvasW: number, canvasH: number): LayoutData {
   const paddingX = Math.max(isMobile ? (isTiny ? 3 : 4) : 30, (canvasW - totalCardsW) / 2);
   const columnXs: number[] = [];
   for (let i = 0; i < colCount; i++) columnXs.push(paddingX + i * (effectiveCardW + effectiveColGap));
-  const topAreaY = isTiny ? 38 : (isMobile ? 44 : 75);
-  const columnY = topAreaY + (isTiny ? 20 : (isMobile ? 24 : 50));
-  const stockX = Math.max(isTiny ? 2 : (isMobile ? 2 : 15), paddingX - effectiveCardW - (isMobile ? 6 : 30));
+  const topAreaY = isMobile ? Math.round(canvasH * 0.08) : 75;
+  const columnY = topAreaY + (isMobile ? Math.round(canvasH * 0.04) : 50);
+  const stockX = Math.max(isMobile ? 2 : 15, paddingX - effectiveCardW - (isMobile ? 6 : 30));
   const stockY = topAreaY + cfg.partYOffset;
   const completeX = canvasW - paddingX + (isMobile ? 6 : 30);
   const completeY = topAreaY + cfg.partYOffset;
@@ -236,7 +227,7 @@ function getEffectiveOffsetY(cfg: LayoutConfig, cardCount: number, isMobile: boo
 }
 
 // --- Main Render ---
-export function renderGame(ctx: CanvasRenderingContext2D, canvasW: number, canvasH: number, state: GameState, dragState: DragState | null, layout: LayoutData): void {
+export function renderGame(ctx: CanvasRenderingContext2D, canvasW: number, canvasH: number, state: GameState, dragState: DragState | null, layout: LayoutData, selectedCard: SelectionState | null = null): void {
   const atm = ATMOSPHERE_COLORS[state.atmosphere];
   const bgGrad = ctx.createRadialGradient(canvasW / 2, canvasH / 3, 0, canvasW / 2, canvasH, canvasH * 1.2);
   bgGrad.addColorStop(0, atm.bg1); bgGrad.addColorStop(1, atm.bg2);
@@ -245,7 +236,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, canvasW: number, canva
   updateParticles(ctx, canvasW, canvasH, state.atmosphere);
   drawCompletedArea(ctx, layout, state, atm);
   drawStockPile(ctx, layout, state);
-  drawColumns(ctx, layout, state, dragState);
+  drawColumns(ctx, layout, state, dragState, selectedCard);
   drawDealAnims(ctx, layout, state.atmosphere);
   if (dragState && dragState.active) drawDraggedCards(ctx, dragState, layout);
   drawHUD(ctx, canvasW, layout, state, atm);
@@ -330,7 +321,7 @@ function drawCompletedArea(ctx: CanvasRenderingContext2D, layout: LayoutData, st
   }
 }
 
-function drawColumns(ctx: CanvasRenderingContext2D, layout: LayoutData, state: GameState, dragState: DragState | null): void {
+function drawColumns(ctx: CanvasRenderingContext2D, layout: LayoutData, state: GameState, dragState: DragState | null, selectedCard: SelectionState | null = null): void {
   const cfg = layout.cfg, atm = ATMOSPHERE_COLORS[state.atmosphere];
   const now = performance.now();
   for (let col = 0; col < 10; col++) {
@@ -347,6 +338,7 @@ function drawColumns(ctx: CanvasRenderingContext2D, layout: LayoutData, state: G
       if (ci > 0) { const prev = column.cards[ci - 1]; cy += prev.faceUp ? effectiveOffset : effectiveOffsetBack; }
       if (isDragged) continue;
       const isDropTarget = dragState && dragState.active && dragState.columnIndex !== col && (column.cards.length === 0 || ci === column.cards.length - 1);
+      const isSelected = selectedCard !== null && selectedCard.col === col && selectedCard.cardIdx === ci;
       
       // Flip animation
       const flipAnim = flipAnims.find(a => a.col === col && a.cardIdx === ci);
@@ -356,13 +348,20 @@ function drawColumns(ctx: CanvasRenderingContext2D, layout: LayoutData, state: G
       if (flipProgress !== undefined && flipProgress < 1 && card.faceUp) {
         const clipW = layout.cardW * flipProgress;
         ctx.save(); ctx.beginPath(); ctx.rect(colX, cy, clipW, layout.cardH); ctx.clip();
-    drawCardFace(ctx, colX, cy, layout.cardW, layout.cardH, cfg.cardRadius, card, state.atmosphere, isDropTarget || false, cfg);
+    drawCardFace(ctx, colX, cy, layout.cardW, layout.cardH, cfg.cardRadius, card, state.atmosphere, isDropTarget || isSelected, cfg);
     ctx.restore();
     if (flipProgress < 0.6) drawCardBack(ctx, colX, cy, layout.cardW, layout.cardH, cfg.cardRadius, state.atmosphere, cfg);
   } else {
-    drawCardFace(ctx, colX, cy, layout.cardW, layout.cardH, cfg.cardRadius, card, state.atmosphere, isDropTarget || false, cfg);
+    drawCardFace(ctx, colX, cy, layout.cardW, layout.cardH, cfg.cardRadius, card, state.atmosphere, isDropTarget || isSelected, cfg);
       }
-      if (card.faceUp && (!flipAnim || flipProgress! >= 1)) {
+      // Selected card golden pulse border
+      if (isSelected && card.faceUp) {
+        const pulse = 0.5 + 0.5 * Math.sin(now / 200);
+        ctx.strokeStyle = '#FFB800'; ctx.lineWidth = 2.5; ctx.globalAlpha = 0.6 + 0.4 * pulse;
+        ctx.shadowColor = '#FFB800'; ctx.shadowBlur = 12 + 4 * pulse;
+        roundRect(ctx, colX, cy, layout.cardW, layout.cardH, cfg.cardRadius); ctx.stroke();
+        ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+      } else if (card.faceUp && (!flipAnim || flipProgress! >= 1)) {
         ctx.strokeStyle = atm.accent; ctx.lineWidth = 0.6; ctx.globalAlpha = 0.2;
         roundRect(ctx, colX, cy, layout.cardW, layout.cardH, cfg.cardRadius); ctx.stroke(); ctx.globalAlpha = 1;
       }

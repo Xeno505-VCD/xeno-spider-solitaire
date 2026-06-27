@@ -2,7 +2,7 @@
 // N-Module: Nexus / Input & Interaction
 // 处理鼠标拖拽、点击、键盘操作
 
-import type { GameState, DragState } from '../o_module/types';
+import type { GameState, DragState, Card } from '../o_module/types';
 import type { LayoutData } from '../x_module/renderer';
 import { getDragCards, executeMove, dealFromStock, canDealFromStock } from '../e_module/engine';
 import { hitTestColumn, hitTestStock, getColumnAtX, getCardYInColumn } from '../x_module/renderer';
@@ -16,6 +16,12 @@ export interface InputCallbacks {
   onDealStart: (state: GameState) => void;
 }
 
+export interface SelectionState {
+  col: number;
+  cardIdx: number;
+  cards: Card[];
+}
+
 export class InputManager {
   private canvas: HTMLCanvasElement;
   private callbacks: InputCallbacks;
@@ -24,6 +30,8 @@ export class InputManager {
   private getState: () => GameState;
   private history: GameState[] = [];
   private isDragging = false;
+  private selectedCard: SelectionState | null = null;
+  private isMobile = false;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -43,10 +51,19 @@ export class InputManager {
 
   updateLayout(layout: LayoutData): void {
     this.layout = layout;
+    this.isMobile = layout.isMobile;
   }
 
   getDragState(): DragState | null {
     return this.dragState;
+  }
+
+  getSelectedCard(): SelectionState | null {
+    return this.selectedCard;
+  }
+
+  clearSelection(): void {
+    this.selectedCard = null;
   }
 
   pushHistory(state: GameState): void {
@@ -121,6 +138,7 @@ export class InputManager {
   private onMouseDown(e: MouseEvent): void {
     const pos = this.getMousePos(e);
     const state = this.getState();
+    this.selectedCard = null;
 
     if (state.gameOver) return;
 
@@ -258,6 +276,7 @@ export class InputManager {
         this.pushHistory(state);
         this.callbacks.onDealStart(state);
       }
+      this.selectedCard = null;
       return;
     }
 
@@ -265,24 +284,48 @@ export class InputManager {
     if (colIdx >= 0) {
       const column = state.columns[colIdx];
       const cardIdx = hitTestColumn(pos.x, pos.y, this.layout, column.cards);
-      if (cardIdx >= 0) {
+      if (cardIdx >= 0 && column.cards[cardIdx]?.faceUp) {
+        // Mobile tap-to-select: first tap selects, second tap on target moves
+        if (this.selectedCard && this.selectedCard.col === colIdx && this.selectedCard.cardIdx === cardIdx) {
+          // Tapped same card - deselect
+          this.selectedCard = null;
+          return;
+        }
+        if (this.selectedCard && this.selectedCard.col !== colIdx) {
+          // Tapped different column - execute move
+          const newState = executeMove(state, this.selectedCard.col, this.selectedCard.cardIdx, colIdx);
+          if (newState) {
+            this.pushHistory(state);
+            this.callbacks.onStateChange(newState);
+            this.pushHistory(newState);
+          } else {
+            this.callbacks.onInvalidMove();
+          }
+          this.selectedCard = null;
+          return;
+        }
+        // First tap - select
         const cards = getDragCards(column, cardIdx);
         if (cards) {
-          this.isDragging = true;
-          const cardY = getCardYInColumn(this.layout, column.cards, cardIdx);
-          this.dragState = {
-            active: true,
-            columnIndex: colIdx,
-            cardIndex: cardIdx,
-            cards,
-            offsetX: pos.x - this.layout.columnXs[colIdx],
-            offsetY: pos.y - cardY,
-            x: pos.x,
-            y: pos.y,
-          };
+          this.selectedCard = { col: colIdx, cardIdx, cards };
         }
+        this.isDragging = true;
+        const cardY = getCardYInColumn(this.layout, column.cards, cardIdx);
+        this.dragState = {
+          active: true,
+          columnIndex: colIdx,
+          cardIndex: cardIdx,
+          cards: cards || [],
+          offsetX: pos.x - this.layout.columnXs[colIdx],
+          offsetY: pos.y - cardY,
+          x: pos.x,
+          y: pos.y,
+        };
+        return;
       }
     }
+    // Tapped empty area - deselect
+    this.selectedCard = null;
   }
 
   private onTouchMove(e: TouchEvent): void {
@@ -302,6 +345,11 @@ export class InputManager {
     const toCol = getColumnAtX(pos.x, this.layout);
 
     if (toCol >= 0 && toCol !== this.dragState.columnIndex) {
+      // If we have a selectedCard, the move was already executed in touchstart
+      if (this.selectedCard) {
+        this.dragState = null;
+        return;
+      }
       this.pushHistory(state);
       const newState = executeMove(
         state,

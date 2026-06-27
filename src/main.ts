@@ -490,14 +490,19 @@ function createToolbar(): HTMLDivElement {
   isToolbarMobileMode = isMobile;
 
   if (isMobile) {
-    // Mobile: single "Settings" button containing all actions
+    // Mobile: single "Settings" button at bottom center for thumb reach
+    newBar.style.cssText = `
+      position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 15;
+      display: flex; gap: 6px;
+    `;
     const btnSettings = document.createElement('button');
     btnSettings.style.cssText = `
-      padding: 8px 14px; border-radius: 8px; cursor: pointer;
-      font-size: 13px; font-weight: bold; font-family: 'Segoe UI', Arial, sans-serif;
-      border:1.5px solid rgba(255,255,255,0.15);
-      background:rgba(10,14,23,0.8); color:#FFFFFF;
-      backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+      padding: 12px 28px; border-radius: 12px; cursor: pointer;
+      font-size: 16px; font-weight: bold; font-family: 'Segoe UI', Arial, sans-serif;
+      border:1.5px solid rgba(0, 229, 255, 0.4);
+      background:rgba(10,14,23,0.9); color:#00E5FF;
+      backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.15);
       transition: all 0.2s ease;
     `;
     btnSettings.textContent = '⚙ 设置';
@@ -601,7 +606,8 @@ function gameLoop(time: number): void {
 
   ctx.clearRect(0, 0, cssW, cssH);
   const dragState = inputManager?.getDragState() || null;
-  renderGame(ctx, cssW, cssH, currentState, dragState, layout);
+  const selectedCard = inputManager?.getSelectedCard() || null;
+  renderGame(ctx, cssW, cssH, currentState, dragState, layout, selectedCard);
   drawStrategyHints(ctx, cssW, cssH);
 
   if (invalidMoveFlash > 0) {
