@@ -472,56 +472,88 @@ function showConfirmDialog(
 
 // --- Toolbar ---
 
+let isToolbarMobileMode = false;
+
 function createToolbar(): HTMLDivElement {
-  const bar = document.createElement('div');
-  bar.id = 'xeno-toolbar';
-  bar.style.cssText = `
+  const bar = document.getElementById('xeno-toolbar');
+  if (bar) bar.remove();
+
+  const newBar = document.createElement('div');
+  newBar.id = 'xeno-toolbar';
+  newBar.style.cssText = `
     position: fixed; top: 10px; left: 10px; z-index: 15;
     display: flex; gap: 6px;
   `;
-  document.getElementById('app')!.appendChild(bar);
+  document.getElementById('app')!.appendChild(newBar);
 
-  const btnStyle = `
-    padding: 8px 14px; border-radius: 8px; cursor: pointer;
-    font-size: 13px; font-weight: bold; font-family: 'Segoe UI', Arial, sans-serif;
-    border:1.5px solid rgba(255,255,255,0.15);
-    background:rgba(10,14,23,0.8); color:#FFFFFF;
-    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
-    transition: all 0.2s ease;
-  `;
+  const isMobile = window.innerWidth < 768;
+  isToolbarMobileMode = isMobile;
 
-  const btnUndo = document.createElement('button');
-  btnUndo.style.cssText = btnStyle;
-  btnUndo.textContent = '↩ 撤销';
-  btnUndo.onclick = () => inputManager?.undoLastMove();
+  if (isMobile) {
+    // Mobile: single "Settings" button containing all actions
+    const btnSettings = document.createElement('button');
+    btnSettings.style.cssText = `
+      padding: 8px 14px; border-radius: 8px; cursor: pointer;
+      font-size: 13px; font-weight: bold; font-family: 'Segoe UI', Arial, sans-serif;
+      border:1.5px solid rgba(255,255,255,0.15);
+      background:rgba(10,14,23,0.8); color:#FFFFFF;
+      backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+      transition: all 0.2s ease;
+    `;
+    btnSettings.textContent = '⚙ 设置';
+    btnSettings.onclick = () => showSettingsPanel();
+    newBar.appendChild(btnSettings);
+  } else {
+    // Desktop: three separate buttons
+    const btnStyle = `
+      padding: 8px 14px; border-radius: 8px; cursor: pointer;
+      font-size: 13px; font-weight: bold; font-family: 'Segoe UI', Arial, sans-serif;
+      border:1.5px solid rgba(255,255,255,0.15);
+      background:rgba(10,14,23,0.8); color:#FFFFFF;
+      backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+      transition: all 0.2s ease;
+    `;
 
-  const btnRestart = document.createElement('button');
-  btnRestart.style.cssText = btnStyle;
-  btnRestart.textContent = '🔄 重开';
-  btnRestart.onclick = () => {
-    showConfirmDialog(
-      '确定要重新开局吗？当前进度将丢失。',
-      '✓ 确定重开',
-      '#FF3366',
-      () => startNewGame(currentState.difficulty, currentState.atmosphere)
-    );
-  };
+    const btnUndo = document.createElement('button');
+    btnUndo.style.cssText = btnStyle;
+    btnUndo.textContent = '↩ 撤销';
+    btnUndo.onclick = () => inputManager?.undoLastMove();
 
-  const btnMenu = document.createElement('button');
-  btnMenu.style.cssText = btnStyle;
-  btnMenu.textContent = '⚙ 菜单';
-  btnMenu.onclick = () => showSettingsPanel();
+    const btnRestart = document.createElement('button');
+    btnRestart.style.cssText = btnStyle;
+    btnRestart.textContent = '🔄 重开';
+    btnRestart.onclick = () => {
+      showConfirmDialog(
+        '确定要重新开局吗？当前进度将丢失。',
+        '✓ 确定重开',
+        '#FF3366',
+        () => startNewGame(currentState.difficulty, currentState.atmosphere)
+      );
+    };
 
-  bar.appendChild(btnUndo);
-  bar.appendChild(btnRestart);
-  bar.appendChild(btnMenu);
+    const btnMenu = document.createElement('button');
+    btnMenu.style.cssText = btnStyle;
+    btnMenu.textContent = '⚙ 菜单';
+    btnMenu.onclick = () => showSettingsPanel();
 
-  return bar;
+    newBar.appendChild(btnUndo);
+    newBar.appendChild(btnRestart);
+    newBar.appendChild(btnMenu);
+  }
+
+  return newBar;
 }
 
 function updateToolbarVisibility(visible: boolean): void {
   const bar = document.getElementById('xeno-toolbar');
   if (bar) bar.style.display = visible ? 'flex' : 'none';
+}
+
+function checkToolbarResponsive(): void {
+  const nowMobile = window.innerWidth < 768;
+  if (nowMobile !== isToolbarMobileMode && gameStarted) {
+    createToolbar();
+  }
 }
 
 // --- Game Loop ---
@@ -698,7 +730,7 @@ const callbacks: InputCallbacks = {
 function init(): void {
   clearSessionCache();
   fullSizeCanvas();
-  window.addEventListener('resize', () => { fullSizeCanvas(); });
+  window.addEventListener('resize', () => { fullSizeCanvas(); checkToolbarResponsive(); });
 
   settings = loadSettings();
   currentState = initGameState(Difficulty.HARD, settings.atmosphere);

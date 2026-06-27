@@ -58,34 +58,35 @@ function getLayoutConfig(canvasW: number): LayoutConfig {
   const isMobile = canvasW < 768;
   const isTiny = canvasW < 480;
   if (isTiny) {
-    // Extreme narrow: e.g. iPhone SE landscape with browser chrome
+    // Extreme narrow: card size halved from original 24x36 -> 12x18
     return {
-      cardW: 24, cardH: 36, cardRadius: 2, colGap: 1,
-      offsetY: 9, offsetYBack: 7,
-      hudTitleFont: 'bold 8px sans-serif', hudTitleY: 12,
-      hudInfoFont: 'bold 5px sans-serif', hudInfoLineH: 9, hudSubY: 2,
-      hintFont: 'bold 6px sans-serif', hintY: 26,
-      cardRankFont: 'bold 8px sans-serif',
-      cardSymbolFont: '5px sans-serif',
-      cardSymbolLarge: 'bold 16px sans-serif',
-      cardBackFont: 'bold 4px monospace',
-      bottomFont: '5px sans-serif',
-      slotSize: 16, slotGap: 2, partYOffset: 2,
+      cardW: 12, cardH: 18, cardRadius: 1, colGap: 1,
+      offsetY: 6, offsetYBack: 4,
+      hudTitleFont: 'bold 7px sans-serif', hudTitleY: 10,
+      hudInfoFont: 'bold 4px sans-serif', hudInfoLineH: 7, hudSubY: 1,
+      hintFont: 'bold 5px sans-serif', hintY: 20,
+      cardRankFont: 'bold 7px sans-serif',
+      cardSymbolFont: '4px sans-serif',
+      cardSymbolLarge: 'bold 12px sans-serif',
+      cardBackFont: 'bold 3px monospace',
+      bottomFont: '4px sans-serif',
+      slotSize: 10, slotGap: 1, partYOffset: 2,
     };
   }
   if (isMobile) {
+    // Mobile: card size halved from original 28x40 -> 14x20
     return {
-      cardW: 28, cardH: 40, cardRadius: 2, colGap: 2,
-      offsetY: 12, offsetYBack: 9,
-      hudTitleFont: 'bold 9px sans-serif', hudTitleY: 14,
-      hudInfoFont: 'bold 6px sans-serif', hudInfoLineH: 10, hudSubY: 2,
-      hintFont: 'bold 7px sans-serif', hintY: 30,
-      cardRankFont: 'bold 9px sans-serif',
-      cardSymbolFont: '6px sans-serif',
-      cardSymbolLarge: 'bold 18px sans-serif',
-      cardBackFont: 'bold 5px monospace',
-      bottomFont: '6px sans-serif',
-      slotSize: 18, slotGap: 2, partYOffset: 3,
+      cardW: 14, cardH: 20, cardRadius: 1, colGap: 2,
+      offsetY: 6, offsetYBack: 4,
+      hudTitleFont: 'bold 8px sans-serif', hudTitleY: 10,
+      hudInfoFont: 'bold 5px sans-serif', hudInfoLineH: 7, hudSubY: 1,
+      hintFont: 'bold 6px sans-serif', hintY: 22,
+      cardRankFont: 'bold 7px sans-serif',
+      cardSymbolFont: '4px sans-serif',
+      cardSymbolLarge: 'bold 12px sans-serif',
+      cardBackFont: 'bold 4px monospace',
+      bottomFont: '5px sans-serif',
+      slotSize: 12, slotGap: 2, partYOffset: 2,
     };
   }
   return {
